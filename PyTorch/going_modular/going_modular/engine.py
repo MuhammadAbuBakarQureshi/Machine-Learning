@@ -6,7 +6,7 @@ from torch.utils.tensorboard import SummaryWriter
 from timeit import default_timer as timer
 from tqdm.autonotebook import tqdm
 
-from utils import print_train_time
+from .utils import print_train_time
 
 def train_step(model: nn.Module,
                dataloader: torch.utils.data.DataLoader,
