@@ -8,6 +8,15 @@ def create_dataloaders(
         batch_size: int,
         num_workers: int
 ):
+    
+    """
+
+    Get training and testing dataloaders
+
+    Returns:
+        train_dataloader, test_dataloader, classes
+
+    """
 
     train_data = datasets.ImageFolder(root=train_dir,
                                       transform=transform)
