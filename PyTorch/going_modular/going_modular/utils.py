@@ -1,6 +1,10 @@
 
+import os
 import torch
 from pathlib import Path
+from torch.utils.tensorboard import SummaryWriter
+
+from datetime import datetime
 
 def save_model(model: torch.nn.Module,
                target_dir: str,
@@ -50,3 +54,24 @@ def print_train_time(start, end, device):
     time_output = f"{day_output if day != 0 else ''}{hour_output if hour != 0 else ''}{min_output if min != 0 else ''}{sec_output if sec != 0 else ''}"
 
     print(f"Total time taken on {device} is {time_output}")
+
+
+
+def create_writer(experiment_name: str,
+                  model_name: str,
+                  extra: str=None):
+    
+    time_stamp = datetime.now().strftime('%d-%m-%Y')
+
+    if extra:
+
+        log_dir = os.path.join("runs", time_stamp, experiment_name, model_name, extra)
+    else:
+
+        log_dir = os.path.join("runs", time_stamp, experiment_name, model_name)
+
+    writer = SummaryWriter(log_dir=log_dir)
+
+    print(f"[INFO] Created SummaryWriter, saving to: {log_dir}...")
+
+    return writer
