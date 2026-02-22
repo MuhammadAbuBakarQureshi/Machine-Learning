@@ -6,7 +6,7 @@ from torch.utils.tensorboard import SummaryWriter
 from timeit import default_timer as timer
 from tqdm.autonotebook import tqdm
 
-from .utils import print_train_time
+from .utils import print_train_time, create_writer
 
 def train_step(model: nn.Module,
                dataloader: torch.utils.data.DataLoader,
@@ -93,12 +93,16 @@ def fit_fn(model: nn.Module,
            test_accuracy_fn,
            batch_size,
            epochs: int,
-           summary_write_path: str,
-           device: torch.device):
+           device: torch.device,
+           experiment_name: str,
+           model_name: str,
+           extra: str=None):
 
     start_time = timer()
 
-    writer = SummaryWriter(summary_write_path)
+    writer = create_writer(experiment_name=experiment_name,
+                           model_name=model_name,
+                           extra=extra)
 
     for epoch in tqdm(range(epochs)):
 
