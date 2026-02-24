@@ -38,7 +38,7 @@ def plot_predictions(model,
         rows = int(k/3) + 1
         cols = 3
 
-        plt.figure(figsize=(20, 10))
+        plt.figure(figsize=(20, int(k*1.5)))
 
         for i, image in enumerate(image_path_list):
 
