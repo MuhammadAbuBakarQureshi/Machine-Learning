@@ -4,7 +4,8 @@ import requests
 from pathlib import Path
 import zipfile
 
-def download_data(root: str):
+def download_data(root: str,
+                  source: str):
 
     data_path = Path(root)
     image_path = data_path / "pizza_steak_sushi"
@@ -21,7 +22,7 @@ def download_data(root: str):
         with open(image_path / "pizza_steak_sushi.zip", "wb") as f:
 
             print(f"Downloading, pizza, steak, sushi data...")
-            request = requests.get("https://github.com/mrdbourke/pytorch-deep-learning/raw/main/data/pizza_steak_sushi.zip")
+            request = requests.get(source)
             f.write(request.content)
 
         with zipfile.ZipFile(image_path / "pizza_steak_sushi.zip", "r") as zip_ref:
@@ -33,3 +34,7 @@ def download_data(root: str):
     if zip_file_path.exists():
 
         os.remove(zip_file_path)
+
+
+
+data_10_percent_path = "https://github.com/mrdbourke/pytorch-deep-learning/raw/main/data/pizza_steak_sushi.zip"
