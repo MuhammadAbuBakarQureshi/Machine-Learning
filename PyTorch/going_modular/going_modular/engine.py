@@ -6,7 +6,7 @@ from torch.utils.tensorboard import SummaryWriter
 from timeit import default_timer as timer
 from tqdm.autonotebook import tqdm
 
-from .utils import print_train_time, create_writer
+from .utils import print_train_time, create_writer, accuracy_metrics
 
 def train_step(model: nn.Module,
                dataloader: torch.utils.data.DataLoader,
@@ -45,7 +45,7 @@ def train_step(model: nn.Module,
     total_train_loss /= len(dataloader)
     total_train_accuray = train_accuracy_fn.compute()
 
-    print(f"Train loss: {total_train_loss} --- | Train Accuracy: {total_train_accuray}")
+    print(f"Train loss: {total_train_loss: .5f} --- | Train Accuracy: {total_train_accuray * 100: .2f}%")
 
     return total_train_loss, total_train_accuray
 
@@ -79,7 +79,7 @@ def test_step(model: nn.Module,
         total_test_loss /= len(dataloader)
         total_test_accuray = test_accuracy_fn.compute()
 
-        print(f"Test loss: {total_test_loss} --- | Test Accuracy: {total_test_accuray}")
+        print(f"Test loss: {total_test_loss: .5f} --- | Test Accuracy: {total_test_accuray * 100: .2f}%")
 
     return total_test_loss, total_test_accuray
 
@@ -89,14 +89,19 @@ def fit_fn(model: nn.Module,
            test_dataloader: torch.utils.data.DataLoader,
            loss_fn: nn.Module,
            optimizer: torch.optim,
-           train_accuracy_fn,
-           test_accuracy_fn,
+        #    train_accuracy_fn,
+        #    test_accuracy_fn,
+           classes,
            batch_size,
            epochs: int,
            device: torch.device,
            experiment_name: str,
            model_name: str,
            extra: str=None):
+
+
+    train_accuracy_fn, test_accuracy_fn = accuracy_metrics(classes=classes,
+                                                           device=device)    
 
     start_time = timer()
 
