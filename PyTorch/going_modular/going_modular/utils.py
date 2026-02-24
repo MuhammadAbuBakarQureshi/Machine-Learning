@@ -3,8 +3,13 @@ import os
 import torch
 from pathlib import Path
 from torch.utils.tensorboard import SummaryWriter
+from torch import nn
+from torchvision import models
+from torchmetrics import Accuracy
 
 from datetime import datetime
+
+## Save the best model
 
 def save_model(model: torch.nn.Module,
                target_dir: str,
@@ -19,6 +24,8 @@ def save_model(model: torch.nn.Module,
     print(f"[INFO] Saving model to: {model_save_path}")
     torch.save(obj=model.state_dict(),
                f=model_save_path)
+
+## Get the training time 
 
 def print_train_time(start, end, device):
 
@@ -55,7 +62,7 @@ def print_train_time(start, end, device):
 
     print(f"Total time taken on {device} is {time_output}")
 
-
+## Create tensorboard writer
 
 def create_writer(experiment_name: str,
                   model_name: str,
@@ -75,3 +82,85 @@ def create_writer(experiment_name: str,
     print(f"[INFO] Created SummaryWriter, saving to: {log_dir}...")
 
     return writer
+
+## Set seeds
+
+def set_seeds(SEED):
+
+    torch.manual_seed(SEED)
+
+    torch.cuda.manual_seed(SEED)
+
+## Create effentb0 model
+
+def create_effnetb0():
+
+    ## download model
+
+    weights = models.EfficientNet_B0_Weights.DEFAULT
+    model = models.efficientnet_b0(weights=weights)
+
+    ## Freeze feature parameters
+
+    for params in model.features.parameters():
+
+        params.requires_grad = False
+
+    ## Set seeds
+
+    set_seeds(42)
+
+    ## Alter classifier for your need
+
+    model.classifier = nn.Sequential(
+
+        nn.Dropout(p=0.2, inplace=True),
+        nn.Linear(in_features=1280, out_features=3, bias=True)
+    )
+    
+    ## Change model name
+
+    model.name = 'effnetb0'
+    print(f"[INFO] Created new {model.name} model")
+    return model
+
+## Create effnetb2  model
+
+def create_effnetb2():
+
+    ## download model
+
+    weights = models.EfficientNet_B2_Weights.DEFAULT
+    model = models.efficientnet_b2(weights=weights)
+
+    ## Freeze feature parameters
+
+    for params in model.features.parameters():
+
+        params.requires_grad = False
+
+    ## Set seeds
+
+    set_seeds(42)
+
+    ## Alter classifier for your need
+
+    model.classifier = nn.Sequential(
+
+        nn.Dropout(p=0.3, inplace=True),
+        nn.Linear(in_features=1408, out_features=3, bias=True)
+    )
+    
+    ## Change model name
+
+    model.name = 'effnetb2'
+    print(f"[INFO] Created new {model.name} model")
+    return model
+
+def accuracy_metrics(classes,
+                     device: torch.device):
+
+    train_accuracy_fn = Accuracy(task='multiclass', num_classes=len(classes)).to(device)
+    test_accuracy_fn = Accuracy(task='multiclass', num_classes=len(classes)).to(device)
+
+    return train_accuracy_fn, test_accuracy_fn
