@@ -29,6 +29,7 @@ def create_dataloaders(
     train_dataloader = DataLoader(
         dataset=train_data,
         batch_size=batch_size,
+        pin_memory=True,
         num_workers=num_workers,
         shuffle=True
     )
