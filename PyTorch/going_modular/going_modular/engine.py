@@ -1,4 +1,3 @@
-
 import torch
 from torch import nn
 from torch.utils.tensorboard import SummaryWriter
@@ -6,7 +5,7 @@ from torch.utils.tensorboard import SummaryWriter
 from timeit import default_timer as timer
 from tqdm.autonotebook import tqdm
 
-from .utils import print_train_time, create_writer, accuracy_metrics
+from going_modular.going_modular.utils import print_train_time, create_writer, accuracy_metrics
 
 def train_step(model: nn.Module,
                dataloader: torch.utils.data.DataLoader,
@@ -45,7 +44,7 @@ def train_step(model: nn.Module,
     total_train_loss /= len(dataloader)
     total_train_accuray = train_accuracy_fn.compute()
 
-    print(f"Train loss: {total_train_loss: .5f} --- | Train Accuracy: {total_train_accuray * 100: .2f}%")
+    print(f"\nTrain loss: {total_train_loss: .5f} --- | Train Accuracy: {total_train_accuray * 100: .2f}%")
 
     return total_train_loss, total_train_accuray
 
@@ -111,20 +110,23 @@ def fit_fn(model: nn.Module,
 
     for epoch in tqdm(range(epochs)):
 
+        print('\n')
+
         train_loss, train_accuracy = train_step(model=model,
-                   dataloader=train_dataloader,
-                   loss_fn=loss_fn,
-                   optimizer=optimizer,
-                   train_accuracy_fn=train_accuracy_fn,
-                   BATCH_SIZE=batch_size,
-                   device=device)
+                dataloader=train_dataloader,
+                loss_fn=loss_fn,
+                optimizer=optimizer,
+                train_accuracy_fn=train_accuracy_fn,
+                BATCH_SIZE=batch_size,
+                device=device)
 
         test_loss, test_accuracy = test_step(model=model,
-                   dataloader=test_dataloader,
-                   loss_fn=loss_fn,
-                   test_accuracy_fn=test_accuracy_fn,
-                   device=device)
+                dataloader=test_dataloader,
+                loss_fn=loss_fn,
+                test_accuracy_fn=test_accuracy_fn,
+                device=device)
 
+        print('\n')
 
         writer.add_scalar('Loss/train', train_loss, epoch)
         writer.add_scalar('Accuracy/train', train_accuracy, epoch)
