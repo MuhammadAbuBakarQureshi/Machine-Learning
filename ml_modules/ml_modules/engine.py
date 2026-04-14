@@ -38,8 +38,8 @@ def train_step(model: nn.Module,
         train_loss.backward()
         optimizer.step()
 
-        if batch % 2 == 0:
-
+        if batch % (len(dataloader)//6) == 0:
+            
             print(f"samples remaning: {batch*BATCH_SIZE} / {len(dataloader)*BATCH_SIZE}")
 
     total_train_loss /= len(dataloader)
@@ -54,6 +54,7 @@ def test_step(model: nn.Module,
                dataloader: torch.utils.data.DataLoader,
                loss_fn: nn.Module,
                test_accuracy_fn,
+               BATCH_SIZE:int,
                device: torch.device):
 
     total_test_loss, total_test_accuray = 0, 0
@@ -65,7 +66,7 @@ def test_step(model: nn.Module,
 
         test_accuracy_fn.reset()
 
-        for X, y in dataloader:
+        for batch, (X, y) in enumerate(dataloader):
 
             X, y = X.to(device), y.to(device)
 
@@ -75,6 +76,10 @@ def test_step(model: nn.Module,
 
             total_test_loss += test_loss
             test_accuracy_fn.update(test_pred, y)
+
+            if batch % (len(dataloader)//6) == 0:
+
+                print(f"samples remaning: {batch*BATCH_SIZE} / {len(dataloader)*BATCH_SIZE}")
 
         total_test_loss /= len(dataloader)
         total_test_accuray = test_accuracy_fn.compute()
@@ -97,7 +102,7 @@ def fit_fn(model: nn.Module,
            device: torch.device,
            experiment_name: str,
            model_name: str,
-           extra: str=''):
+           extra: str=None):
 
 
     train_accuracy_fn, test_accuracy_fn = accuracy_metrics(classes=classes,
@@ -123,6 +128,7 @@ def fit_fn(model: nn.Module,
                    dataloader=test_dataloader,
                    loss_fn=loss_fn,
                    test_accuracy_fn=test_accuracy_fn,
+                   BATCH_SIZE=batch_size,
                    device=device)
 
 
