@@ -2,7 +2,7 @@
 **/venv/
 **/datasets
 **/models
-
+**/.env
 
 
 
