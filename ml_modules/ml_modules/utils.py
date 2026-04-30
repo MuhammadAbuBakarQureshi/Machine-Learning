@@ -158,7 +158,7 @@ def create_effnetb2():
     print(f"[INFO] Created new {model.name} model")
     return model
 
-def create_resnet101():
+def create_resnet101(num_classes:int):
 
     resnet_101_weights = models.ResNet101_Weights.DEFAULT
     resnet_101_model = models.resnet101(weights=resnet_101_weights)
@@ -181,12 +181,151 @@ def create_resnet101():
 
     ## Alter output layer
 
-    resnet_101_model.fc = nn.Linear(in_features=2048, out_features=6, bias=True)
+    resnet_101_model.fc = nn.Linear(in_features=2048, out_features=num_classes, bias=True)
     
     resnet_101_model.name = 'resnet101'
     print(f"[INFO] Created new {resnet_101_model.name} model")
 
     return resnet_101_model
+
+# def create_vit_b_16(num_classes):
+
+        
+#     weights = models.ViT_B_16_Weights.DEFAULT
+#     vit_b_16 = models.vit_b_16(weights=weights)
+
+#     for params in vit_b_16.parameters():
+
+#         params.requires_grad = False
+
+
+#     vit_b_16.heads = nn.Sequential(
+#                     nn.Linear(in_features=768,
+#                             out_features=num_classes,
+#                             bias=True)
+#                 )
+#     vit_b_16.name = "vit_b_16"
+#     print(f"[INFO] Created new {vit_b_16.name} model")
+#     return vit_b_16
+
+
+def create_vit_b_16(num_classes: int, unfreeze_layers: int):
+
+        
+    weights = models.ViT_B_16_Weights.DEFAULT
+    vit_b_16 = models.vit_b_16(weights=weights)
+
+    for params in vit_b_16.parameters():
+
+        params.requires_grad = False
+
+
+    ## Unfreeze layers
+
+    layers_to_unfreeze = [
+
+        vit_b_16.encoder.ln,
+        vit_b_16.encoder.layers.encoder_layer_11,
+        vit_b_16.encoder.layers.encoder_layer_10,
+        vit_b_16.encoder.layers.encoder_layer_9,
+        vit_b_16.encoder.layers.encoder_layer_8,
+        vit_b_16.encoder.layers.encoder_layer_7,
+        vit_b_16.encoder.layers.encoder_layer_6,
+        vit_b_16.encoder.layers.encoder_layer_5
+    ]
+
+    for i, layer in enumerate(layers_to_unfreeze):
+
+        i += 1
+
+        if unfreeze_layers >= i:
+
+            for params in layer.parameters():
+
+                params.requires_grad = True
+
+        else:
+
+            break
+
+
+    vit_b_16.heads = nn.Sequential(
+                    nn.Linear(in_features=768,
+                            out_features=num_classes,
+                            bias=True)
+                )
+    vit_b_16.name = "vit_b_16"
+    print(f"[INFO] Created new {vit_b_16.name} model")
+    return vit_b_16
+
+def create_vit_b_32(num_classes: int, unfreeze_layers: int):
+
+        
+    weights = models.ViT_B_32_Weights.DEFAULT
+    vit_b_32 = models.vit_b_32(weights=weights)
+
+    for params in vit_b_32.parameters():
+
+        params.requires_grad = False
+
+    ## Unfreeze layers
+
+    layers_to_unfreeze = [
+
+        vit_b_32.encoder.ln,
+        vit_b_32.encoder.layers.encoder_layer_11,
+        vit_b_32.encoder.layers.encoder_layer_10,
+        vit_b_32.encoder.layers.encoder_layer_9,
+        vit_b_32.encoder.layers.encoder_layer_8,
+        vit_b_32.encoder.layers.encoder_layer_7,
+        vit_b_32.encoder.layers.encoder_layer_6,
+        vit_b_32.encoder.layers.encoder_layer_5
+    ]
+
+    for i, layer in enumerate(layers_to_unfreeze):
+
+        i += 1
+
+        if unfreeze_layers >= i:
+
+            for params in layer.parameters():
+
+                params.requires_grad = True
+
+        else:
+
+            break
+
+
+    vit_b_32.heads = nn.Sequential(
+                    nn.Dropout(p=0.3),
+                    nn.Linear(in_features=768,
+                            out_features=num_classes,
+                            bias=True)
+                )
+    vit_b_32.name = "vit_b_32"
+    print(f"[INFO] Created new {vit_b_32.name} model")
+    return vit_b_32
+
+def create_vit_l_16(num_classes):
+
+        
+    weights = models.ViT_L_16_Weights.DEFAULT
+    vit_l_16 = models.vit_l_16(weights=weights)
+
+    for params in vit_l_16.parameters():
+
+        params.requires_grad = False
+
+    vit_l_16.heads = nn.Sequential(
+                    nn.Linear(in_features=1024,
+                            out_features=num_classes,
+                            bias=True)
+                )
+    vit_l_16.name = "vit_l_16"
+    print(f"[INFO] Created new {vit_l_16.name} model")
+    return vit_l_16
+
 
 def accuracy_metrics(classes,
                      device: torch.device):
@@ -196,10 +335,11 @@ def accuracy_metrics(classes,
 
     return train_accuracy_fn, test_accuracy_fn
 
-def model_summary(model):
+def model_summary(model,
+                  input_size=[32, 3, 244, 244]):
 
     print(summary(model=model,
-        input_size=[32, 3, 244, 244],
+        input_size=input_size,
         col_names=['num_params', 'input_size', 'output_size', 'trainable'], 
         col_width=20,
         row_settings=['var_names']))
