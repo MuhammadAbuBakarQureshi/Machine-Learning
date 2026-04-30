@@ -1,11 +1,14 @@
+from torch.utils.data import WeightedRandomSampler
 from torchvision import datasets
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader
+from collections import Counter
 
 def get_dataloaders(train_dir,
                     test_dir,
                     BATCH_SIZE,
                     NUM_WORKERS,
-                    weights=None,
+                    create_sampler=False,
+                    shuffle=True,
                     test_transform=None,
                     train_transform=None):
     
@@ -17,11 +20,7 @@ def get_dataloaders(train_dir,
 
     """
 
-    ## if in future you wanna use weights you can update this function with this kinda logic
-
-    # if transform == None:
-
-    #     transform = weights.transforms()
+    ## Datasets
 
     train_dataset = datasets.ImageFolder(
         root=train_dir,
@@ -33,18 +32,37 @@ def get_dataloaders(train_dir,
         transform=test_transform
     )
 
-
     classes = train_dataset.classes
+    
+    ## Sampler
 
-    # train_size = int(0.8 * len(dataset))
-    # test_size = len(dataset) - train_size
+    if create_sampler:
 
-    # train_dataset, test_dataset = random_split(dataset, [train_size, test_size])
+        class_count = Counter(train_dataset.targets)
 
-    train_dataloader = DataLoader(train_dataset,
-                                batch_size=BATCH_SIZE,
-                                num_workers=NUM_WORKERS,
-                                shuffle=True)
+        class_weights = [ 1.0 / class_count[y] for y in train_dataset.targets ]
+
+        sampler = WeightedRandomSampler(
+            weights= class_weights,
+            num_samples=len(train_dataset),
+            replacement=True
+        )
+
+        
+        ## Dataloader
+
+        train_dataloader = DataLoader(train_dataset,
+                            batch_size=BATCH_SIZE,
+                            num_workers=NUM_WORKERS,
+                            sampler=sampler,
+                            shuffle=shuffle)
+
+    else:
+
+        train_dataloader = DataLoader(train_dataset,
+                                    batch_size=BATCH_SIZE,
+                                    num_workers=NUM_WORKERS,
+                                    shuffle=shuffle)
 
     test_dataloader = DataLoader(test_dataset,
                                 batch_size=BATCH_SIZE,
